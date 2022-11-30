@@ -115,8 +115,8 @@ void test_hm_remove() {
 }
 
 void test_hm_rehash() {
+    //TODO Improve this test
     struct HashMap *hm = hm_new(5, free);
-    // struct HashMap *hm = hm_new_with_hash(5, free, custom_hash);
     int *val;
 
     val = malloc(sizeof(int));
