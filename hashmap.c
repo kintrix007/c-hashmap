@@ -7,18 +7,22 @@
 
 static unsigned int default_hash(char *str) {
     unsigned int hash = 0;
+    
     for (int i = 0; str[i] != '\0'; i++) {
         hash = str[i] + 31*hash;
     }
+    
     return hash;
 }
 
 struct HashMapItem *hm_item_new(char *key, void *value, struct HashMapItem *next) {
     struct HashMapItem *item = malloc(sizeof(struct HashMapItem));
+    
     item->key = malloc(strlen(key)+1);
     strcpy(item->key, key);
     item->value = value;
     item->next = next;
+
     return item;
 }
 
@@ -75,7 +79,20 @@ void hm_set(struct HashMap *map, char *key, void *value) {
     }
 }
 
-void *hm_get(struct HashMap *map, char *key);
+void *hm_get(struct HashMap *map, char *key) {
+    int idx = map->hash(key) % map->size;
+    struct HashMapItem *item = map->slots[idx];
+
+    if (item == NULL) return NULL;
+
+    while (item->next != NULL && strcmp(item->key, key) != 0) {
+        item = item->next;
+    }
+
+    if (strcmp(item->key, key) != 0) return NULL;
+
+    return item->value;
+}
 
 void *hm_remove(struct HashMap *map, char *key);
 
