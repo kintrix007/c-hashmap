@@ -3,6 +3,7 @@
 
 # Resulting executable
 app.out
+test-suite
 
 # Valgrind
 vgcore.*
