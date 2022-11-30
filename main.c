@@ -4,7 +4,7 @@
 #include "hashmap.h"
 
 int main() {
-    struct HashMap *hm = hm_new(128);
+    struct HashMap *hm = hm_new(64);
 
     int *val = malloc(sizeof(int));
     *val = 5;
@@ -19,10 +19,16 @@ int main() {
     *val = 9999;
     hm_set(hm, "Ur mom", val);
 
+    hm_print(hm, NULL);
+
     int a = *(int*)hm_get(hm, "Joe");
     printf("Joe: %d\n", a);
     a = *(int*)hm_get(hm, "Lisa");
     printf("Lisa: %d\n", a);
+    a = *(int *)hm_get(hm, "Mark");
+    printf("Mark: %d\n", a);
+    a = *(int *)hm_get(hm, "Ur mom");
+    printf("Ur mom: %d\n", a);
     printf("Lucas: %p\n", hm_get(hm, "Lucas"));
 
     hm_free(hm, free);

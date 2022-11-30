@@ -38,6 +38,9 @@ struct HashMap* hm_new_with_hash(size_t size, HashFunction *hash);
 
 /**
  * Free all the memory allocated for the hashmap.
+ * @param value_free a function to call on each value.
+ * This function is supposed to free the memory of value.
+ * Calls nothing if it is NULL.
 */
 void hm_free(struct HashMap *map, void value_free(void *value));
 
@@ -60,6 +63,14 @@ void *hm_remove(struct HashMap *map, char *key);
 
 void hm_foreach(struct HashMap *map, void callback(char *key, void *value));
 
-void hm_set_hash(struct HashMap *map, HashFunction *hash);
+/**
+ * Set the new hash function and rehash the HashMap.
+*/
+void hm_set_new_hash(struct HashMap *map, HashFunction *hash);
+
+/**
+ * Print the contents to stdout.
+ */
+void hm_print(struct HashMap *map, void print_value(void *value));
 
 #endif

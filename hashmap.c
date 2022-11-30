@@ -15,6 +15,10 @@ static unsigned int default_hash(char *str) {
     return hash;
 }
 
+static void default_print_value(void *value) {
+    printf("%ld", *(long *)value);
+}
+
 struct HashMapItem *hm_item_new(char *key, void *value, struct HashMapItem *next) {
     struct HashMapItem *item = malloc(sizeof(struct HashMapItem));
     
@@ -98,4 +102,24 @@ void *hm_remove(struct HashMap *map, char *key);
 
 void hm_foreach(struct HashMap *map, void (*callback)(char *key, void *value));
 
-void hm_set_hash(struct HashMap *map, HashFunction hash);
+void hm_set_new_hash(struct HashMap *map, HashFunction hash);
+
+void hm_print(struct HashMap *map, void print_value(void *value)) {
+    if (print_value == NULL) print_value = default_print_value;
+
+    for (size_t i = 0; i < map->size; i++) {
+        struct HashMapItem *item = map->slots[i];
+        if (item == NULL) continue;
+
+        printf("Socket #%05lu: ", i);
+
+        while (item != NULL) {
+            printf("\"%s\" : ", item->key);
+            print_value(item->value);
+
+            if (item->next != NULL) printf(", ");
+            item = item->next;
+        }
+        printf("\n");
+    }
+}
