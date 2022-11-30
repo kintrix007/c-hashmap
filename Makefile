@@ -3,7 +3,7 @@ OBJS = hashmap.o main.o
 CFLAGS = -std=c11 -Wall -Wextra -Werror -Wpedantic -Wnull-dereference -ggdb3
 TEST = test-suite
 
-.PHONY: test run clean
+.PHONY: run test valgrind clean
 
 $(app): $(OBJS)
 	gcc $(CFLAGS) -o $@ $^
@@ -23,6 +23,10 @@ lib/gest.o: lib/gest.c
 test: hashmap.o tests/test.o lib/gest.o
 	gcc -std=c11 -ggdb3 -o $(TEST) $^
 	@printf "\n---\n\n"
+	-./$(TEST)
+
+valgrind: hashmap.o tests/test.o lib/gest.o
+	gcc -std=c11 -ggdb3 -o $(TEST) $^
 	valgrind -q --leak-check=full --track-origins=yes -s ./$(TEST)
 
 run:
