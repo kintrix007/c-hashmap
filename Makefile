@@ -29,4 +29,4 @@ run:
 	make && ./$(app)
 
 clean:
-	-rm -r *.o */*.o $(app) $(TEST)
+	-rm -r *.o */*.o $(app) $(TEST) vgcore.*
