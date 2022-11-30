@@ -154,6 +154,8 @@ void *hm_remove(struct HashMap *map, char *key) {
 }
 
 void hm_foreach(struct HashMap *map, void callback(char *key, void *value)) {
+    //! Untested
+    //TODO Test properly
     assert(map != NULL);
 
     if (callback == NULL) return;
