@@ -10,6 +10,7 @@ static unsigned int default_hash(char *str) {
     for (int i = 0; str[i] != '\0'; i++) {
         hash = str[i] + 31*hash;
     }
+    return hash;
 }
 
 struct HashMapItem *hm_item_new(char *key, void *value, struct HashMapItem *next) {
@@ -18,6 +19,7 @@ struct HashMapItem *hm_item_new(char *key, void *value, struct HashMapItem *next
     strcpy(item->key, key);
     item->value = value;
     item->next = next;
+    return item;
 }
 
 void hm_item_free(struct HashMapItem *hm_item, void value_free(void *value)) {
@@ -35,7 +37,7 @@ struct HashMap* hm_new_with_hash(size_t size, HashFunction hash) {
     
     map->size = size;
     map->slots = malloc(size * sizeof(struct HashMapItem*));
-    for (int i = 0; i < size; i++) {
+    for (size_t i = 0; i < size; i++) {
         map->slots[i] = NULL;
     }
     map->hash = hash;
@@ -44,7 +46,7 @@ struct HashMap* hm_new_with_hash(size_t size, HashFunction hash) {
 }
 
 void hm_free(struct HashMap *map, void value_free(void *value)) {
-    for (int i = 0; i < map->size; i++) {
+    for (size_t i = 0; i < map->size; i++) {
         struct HashMapItem *item = map->slots[i];
         if (item != NULL) hm_item_free(item, value_free);
     }
