@@ -72,10 +72,14 @@ void *hm_get(struct HashMap *map, char *key);
 */
 void *hm_remove(struct HashMap *map, char *key);
 
+/**
+ * Iterate over all the key-value pairs of the HashMap.
+ * @param callback a function that gets called with all the key-value pairs
+*/
 void hm_foreach(struct HashMap *map, void callback(char *key, void *value));
 
 /**
- * Set the new hash function and rehash the HashMap.
+ * Set the new hash function and rehash the keys.
 */
 void hm_set_new_hash(struct HashMap *map, HashFunction *hash);
 

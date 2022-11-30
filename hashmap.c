@@ -135,6 +135,7 @@ void *hm_remove(struct HashMap *map, char *key) {
     if (strcmp(item->key, key) != 0) return NULL;
 
     if (prev == NULL) {
+        //? It just gets set to NULL if it is the only item in the socket
         map->slots[idx] = item->next;
     } else {
         prev->next = item->next;
@@ -145,7 +146,19 @@ void *hm_remove(struct HashMap *map, char *key) {
     return value;
 }
 
-void hm_foreach(struct HashMap *map, void (*callback)(char *key, void *value));
+void hm_foreach(struct HashMap *map, void callback(char *key, void *value)) {
+    assert(map != NULL);
+    if (callback == NULL) return;
+
+    for (size_t i = 0; i < map->sockets; i++) {
+        struct HashMapItem *item = map->slots[i];
+
+        while (item != NULL) {
+            callback(item->key, item->value);
+            item = item->next;
+        }
+    }
+}
 
 void hm_set_new_hash(struct HashMap *map, HashFunction hash);
 
@@ -154,6 +167,7 @@ void hm_print(struct HashMap *map, void print_value(void *value)) {
 
     if (print_value == NULL) print_value = default_print_value;
 
+    printf("====START====\n");
     for (size_t i = 0; i < map->sockets; i++) {
         struct HashMapItem *item = map->slots[i];
         if (item == NULL) continue;
@@ -169,4 +183,5 @@ void hm_print(struct HashMap *map, void print_value(void *value)) {
         }
         printf("\n");
     }
+    printf("=====END=====\n");
 }
