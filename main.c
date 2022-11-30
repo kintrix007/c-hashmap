@@ -4,7 +4,7 @@
 #include "hashmap.h"
 
 int main() {
-    struct HashMap *hm = hm_new(64);
+    struct HashMap *hm = hm_new(1);
 
     int *val = malloc(sizeof(int));
     *val = 5;
@@ -15,21 +15,24 @@ int main() {
     val = malloc(sizeof(int));
     *val = 7;
     hm_set(hm, "Mark", val);
+    hm_print(hm, NULL);
     val = malloc(sizeof(int));
     *val = 9999;
     hm_set(hm, "Ur mom", val);
 
-    hm_print(hm, NULL);
+    // hm_print(hm, NULL);
 
-    int a = *(int*)hm_get(hm, "Joe");
-    printf("Joe: %d\n", a);
-    a = *(int*)hm_get(hm, "Lisa");
-    printf("Lisa: %d\n", a);
-    a = *(int *)hm_get(hm, "Mark");
-    printf("Mark: %d\n", a);
-    a = *(int *)hm_get(hm, "Ur mom");
-    printf("Ur mom: %d\n", a);
-    printf("Lucas: %p\n", hm_get(hm, "Lucas"));
+    // void *value = hm_get(hm, "Joe");
+    // if (value != NULL) printf("Joe: %d\n", *(int*)value);
+    // value = hm_get(hm, "Lucas");
+    // if (value != NULL) printf("Lucas: %d\n", *(int *)value);
+
+    // value = hm_remove(hm, "Joe");
+    // if (value != NULL) free(value);
+    // value = hm_remove(hm, "Robert");
+    // if (value != NULL) free(value);
+
+    // hm_print(hm, NULL);
 
     hm_free(hm, free);
 }

@@ -2,6 +2,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 #include "hashmap.h"
 
@@ -16,7 +17,11 @@ static unsigned int default_hash(char *str) {
 }
 
 static void default_print_value(void *value) {
-    printf("%ld", *(long *)value);
+    if (value == NULL) {
+        printf("(nil)");
+    } else {
+        printf("%d", *(int *)value);
+    }
 }
 
 struct HashMapItem *hm_item_new(char *key, void *value, struct HashMapItem *next) {
@@ -36,16 +41,16 @@ void hm_item_free(struct HashMapItem *hm_item, void value_free(void *value)) {
     free(hm_item);
 }
 
-struct HashMap* hm_new(size_t size) {
-    return hm_new_with_hash(size, default_hash);
+struct HashMap* hm_new(size_t sockets) {
+    return hm_new_with_hash(sockets, default_hash);
 }
 
-struct HashMap* hm_new_with_hash(size_t size, HashFunction hash) {
+struct HashMap* hm_new_with_hash(size_t sockets, HashFunction hash) {
     struct HashMap *map = malloc(sizeof(struct HashMap));
     
-    map->size = size;
-    map->slots = malloc(size * sizeof(struct HashMapItem*));
-    for (size_t i = 0; i < size; i++) {
+    map->sockets = sockets;
+    map->slots = malloc(sockets * sizeof(struct HashMapItem*));
+    for (size_t i = 0; i < sockets; i++) {
         map->slots[i] = NULL;
     }
     map->hash = hash;
@@ -54,9 +59,16 @@ struct HashMap* hm_new_with_hash(size_t size, HashFunction hash) {
 }
 
 void hm_free(struct HashMap *map, void value_free(void *value)) {
-    for (size_t i = 0; i < map->size; i++) {
+    assert(map != NULL);
+
+    for (size_t i = 0; i < map->sockets; i++) {
         struct HashMapItem *item = map->slots[i];
-        if (item != NULL) hm_item_free(item, value_free);
+
+        while (item != NULL) {
+            struct HashMapItem *tmp = item->next;
+            hm_item_free(item, value_free);
+            item = tmp;
+        }
     }
 
     free(map->slots);
@@ -64,7 +76,9 @@ void hm_free(struct HashMap *map, void value_free(void *value)) {
 }
 
 void hm_set(struct HashMap *map, char *key, void *value) {
-    int idx = map->hash(key) % map->size;
+    assert(map != NULL);
+    
+    int idx = map->hash(key) % map->sockets;
     struct HashMapItem *item = map->slots[idx];
 
     if (item == NULL) {
@@ -75,16 +89,20 @@ void hm_set(struct HashMap *map, char *key, void *value) {
     while (item->next != NULL && strcmp(item->key, key) != 0) {
         item = item->next;
     }
+    assert(item != NULL);
 
     if (strcmp(item->key, key) == 0) {
         item->value = value;
     } else {
-        map->slots[idx]->next = hm_item_new(key, value, NULL);
+        assert(item->next == NULL);
+        item->next = hm_item_new(key, value, NULL);
     }
 }
 
 void *hm_get(struct HashMap *map, char *key) {
-    int idx = map->hash(key) % map->size;
+    assert(map != NULL);
+
+    int idx = map->hash(key) % map->sockets;
     struct HashMapItem *item = map->slots[idx];
 
     if (item == NULL) return NULL;
@@ -92,22 +110,51 @@ void *hm_get(struct HashMap *map, char *key) {
     while (item->next != NULL && strcmp(item->key, key) != 0) {
         item = item->next;
     }
+    assert(item != NULL);
 
     if (strcmp(item->key, key) != 0) return NULL;
 
     return item->value;
 }
 
-void *hm_remove(struct HashMap *map, char *key);
+void *hm_remove(struct HashMap *map, char *key) {
+    assert(map != NULL);
+
+    int idx = map->hash(key) % map->sockets;
+    struct HashMapItem *item = map->slots[idx];
+    struct HashMapItem *prev = NULL;
+
+    if (item == NULL) return NULL;
+
+    while (item->next != NULL && strcmp(item->key, key) != 0) {
+        prev = item;
+        item = item->next;
+    }
+    assert(item != NULL);
+
+    if (strcmp(item->key, key) != 0) return NULL;
+
+    if (prev == NULL) {
+        map->slots[idx] = item->next;
+    } else {
+        prev->next = item->next;
+    }
+
+    void *value = item->value;
+    hm_item_free(item, NULL);
+    return value;
+}
 
 void hm_foreach(struct HashMap *map, void (*callback)(char *key, void *value));
 
 void hm_set_new_hash(struct HashMap *map, HashFunction hash);
 
 void hm_print(struct HashMap *map, void print_value(void *value)) {
+    assert(map != NULL);
+
     if (print_value == NULL) print_value = default_print_value;
 
-    for (size_t i = 0; i < map->size; i++) {
+    for (size_t i = 0; i < map->sockets; i++) {
         struct HashMapItem *item = map->slots[i];
         if (item == NULL) continue;
 
