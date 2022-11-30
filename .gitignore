@@ -6,3 +6,6 @@ app.out
 
 # Valgrind
 vgcore.*
+
+# VSCode
+.vscode/
