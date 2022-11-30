@@ -1,8 +1,10 @@
 app = app.out
 OBJS = hashmap.o main.o
+CFLAGS = -std=c11 -Wall -ggdb3
+# CFLAGS = -O2
 
 $(app): $(OBJS)
-	gcc -O2 -o $@ $(OBJS)
+	gcc $(CFLAGS) -o $@ $(OBJS)
 
 main.o: main.c
 	gcc -c -o $@ $?

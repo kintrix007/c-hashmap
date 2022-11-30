@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stddef.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "hashmap.h"
 
@@ -9,6 +10,20 @@ static unsigned int default_hash(char *str) {
     for (int i = 0; str[i] != '\0'; i++) {
         hash = str[i] + 31*hash;
     }
+}
+
+struct HashMapItem *hm_item_new(char *key, void *value, struct HashMapItem *next) {
+    struct HashMapItem *item = malloc(sizeof(struct HashMapItem));
+    item->key = malloc(strlen(key)+1);
+    strcpy(item->key, key);
+    item->value = value;
+    item->next = next;
+}
+
+void hm_item_free(struct HashMapItem *hm_item, void value_free(void *value)) {
+    if (value_free != NULL) value_free(hm_item->value);
+    free(hm_item->key);
+    free(hm_item);
 }
 
 struct HashMap* hm_new(size_t size) {
@@ -28,21 +43,38 @@ struct HashMap* hm_new_with_hash(size_t size, HashFunction hash) {
     return map;
 }
 
-void hm_free(struct HashMap *map) {
+void hm_free(struct HashMap *map, void value_free(void *value)) {
     for (int i = 0; i < map->size; i++) {
-        free(map->slots[i]);
+        struct HashMapItem *item = map->slots[i];
+        if (item != NULL) hm_item_free(item, value_free);
     }
+
     free(map->slots);
     free(map);
 }
 
-void hm_set(struct HashMap *map, char *key, void *value);
+void hm_set(struct HashMap *map, char *key, void *value) {
+    int idx = map->hash(key) % map->size;
+    struct HashMapItem *item = map->slots[idx];
+
+    if (item == NULL) {
+        map->slots[idx] = hm_item_new(key, value, NULL);
+        return;
+    }
+
+    while (item->next != NULL && strcmp(item->key, key) != 0) {
+        item = item->next;
+    }
+
+    if (strcmp(item->key, key) == 0) {
+        item->value = value;
+    } else {
+        map->slots[idx]->next = hm_item_new(key, value, NULL);
+    }
+}
 
 void *hm_get(struct HashMap *map, char *key);
 
-/**
- * Remove and return the element with the matching key.
- */
 void *hm_remove(struct HashMap *map, char *key);
 
 void hm_foreach(struct HashMap *map, void (*callback)(char *key, void *value));

@@ -3,3 +3,6 @@
 
 # Resulting executable
 app.out
+
+# Valgrind
+vgcore.*
