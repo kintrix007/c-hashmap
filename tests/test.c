@@ -5,8 +5,15 @@
 
 #include "../hashmap.h"
 
-void test_hm_free() {
+static unsigned int custom_hash(char *str) {
+    unsigned int hash = str[0] * 7;
+    return hash;
+}
+
+void test_hm_free()
+{
     struct HashMap *hm = hm_new(150, free);
+    // struct HashMap *hm = hm_new_with_hash(150, free, custom_hash);
     char *key;
 
     for (char i = '!'; i < '~'; i++) {
@@ -107,8 +114,50 @@ void test_hm_remove() {
     hm_free(hm);
 }
 
+void test_hm_rehash() {
+    struct HashMap *hm = hm_new(5, free);
+    // struct HashMap *hm = hm_new_with_hash(5, free, custom_hash);
+    int *val;
+
+    val = malloc(sizeof(int));
+    *val = 10;
+    hm_set(hm, "ten", val); // Overrides (and frees) the previous "one" : 999
+
+    val = malloc(sizeof(int));
+    *val = 100;
+    hm_set(hm, "hundred", val);
+
+    val = malloc(sizeof(int));
+    *val = 1000;
+    hm_set(hm, "thousand", val);
+
+    hm_set_new_hash(hm, custom_hash);
+
+    val = hm_remove(hm, "one");
+    assert_that(val == NULL);
+    val = hm_remove(hm, "ten");
+    assert_that(val != NULL);
+    assert_int_equals(*(int*)val, 10);
+    free(val);
+    val = hm_remove(hm, "hundred");
+    assert_that(val != NULL);
+    assert_int_equals(*(int*)val, 100);
+    free(val);
+    val = hm_remove(hm, "thousand");
+    assert_that(val != NULL);
+    assert_int_equals(*(int*)val, 1000);
+    free(val);
+
+    for (size_t i = 0; i < hm->socket_count; i++) {
+        assert_ptr_equals(hm->sockets[i], NULL);
+    }
+
+    hm_free(hm);
+}
+
 void register_tests() {
     register_test(test_hm_free);
     register_test(test_hm_set_get);
     register_test(test_hm_remove);
+    register_test(test_hm_rehash);
 }
