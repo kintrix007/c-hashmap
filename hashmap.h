@@ -14,8 +14,8 @@ struct HashMapItem
 };
 
 struct HashMap {
-    size_t sockets;
-    struct HashMapItem **slots;
+    size_t socket_count;
+    struct HashMapItem **sockets;
     HashFunction *hash;
     ValueFreeFunction *value_free;
 };
@@ -35,18 +35,18 @@ void hm_item_free(struct HashMapItem *hm_item, ValueFreeFunction value_free);
 
 /**
  * Construct a new HashMap with a set amount of sockets.
- * @param sockets the amount of sockets
+ * @param socket_count the amount of sockets
  * @returns a pointer to the newly constructed HashMap
 */
-struct HashMap* hm_new(size_t sockets, ValueFreeFunction value_free);
+struct HashMap* hm_new(size_t socket_count, ValueFreeFunction value_free);
 
 /**
  * Construct a new HashMap with a set amount of sockets and a custom hash function.
- * @param sockets the amount of sockets
+ * @param socket_count the amount of sockets
  * @param hash the custom hash function
  * @returns a pointer to the newly constructed HashMap
  */
-struct HashMap* hm_new_with_hash(size_t sockets, ValueFreeFunction value_free, HashFunction *hash);
+struct HashMap* hm_new_with_hash(size_t socket_count, ValueFreeFunction value_free, HashFunction *hash);
 
 /**
  * Free all the memory allocated for the hashmap.
@@ -72,7 +72,8 @@ void *hm_get(struct HashMap *map, char *key);
 /**
  * Remove and return the element with the matching key.
  * Does not modify the HashSet if the key does not exist.
- * @returns NULL if the key is not found, or a pointer to the value otherwise
+ * @returns NULL if the key is not found, or a pointer to the value otherwise.
+ * This HAS to be freed manually.
 */
 void *hm_remove(struct HashMap *map, char *key);
 
