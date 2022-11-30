@@ -4,8 +4,10 @@
 #include <stddef.h>
 
 typedef unsigned int HashFunction(char *str);
+typedef void ValueFreeFunction(void *value);
 
-struct HashMapItem {
+struct HashMapItem
+{
     char *key;
     void *value;
     struct HashMapItem *next;
@@ -15,6 +17,7 @@ struct HashMap {
     size_t sockets;
     struct HashMapItem **slots;
     HashFunction *hash;
+    ValueFreeFunction *value_free;
 };
 
 /**
@@ -28,14 +31,14 @@ struct HashMapItem* hm_item_new(char *key, void *value, struct HashMapItem *next
  * This function should free the memory of the value.
  * Calls nothing if it is NULL.
 */
-void hm_item_free(struct HashMapItem *hm_item, void value_free(void *value));
+void hm_item_free(struct HashMapItem *hm_item, ValueFreeFunction value_free);
 
 /**
  * Construct a new HashMap with a set amount of sockets.
  * @param sockets the amount of sockets
  * @returns a pointer to the newly constructed HashMap
 */
-struct HashMap* hm_new(size_t sockets);
+struct HashMap* hm_new(size_t sockets, ValueFreeFunction value_free);
 
 /**
  * Construct a new HashMap with a set amount of sockets and a custom hash function.
@@ -43,7 +46,7 @@ struct HashMap* hm_new(size_t sockets);
  * @param hash the custom hash function
  * @returns a pointer to the newly constructed HashMap
  */
-struct HashMap* hm_new_with_hash(size_t sockets, HashFunction *hash);
+struct HashMap* hm_new_with_hash(size_t sockets, ValueFreeFunction value_free, HashFunction *hash);
 
 /**
  * Free all the memory allocated for the hashmap.
@@ -51,11 +54,12 @@ struct HashMap* hm_new_with_hash(size_t sockets, HashFunction *hash);
  * This function should free the memory of value.
  * Calls nothing if it is NULL.
 */
-void hm_free(struct HashMap *map, void value_free(void *value));
+void hm_free(struct HashMap *map);
 
 /**
- * Set a given key to a new value in the HashMap.
- * If the key does not exist, adds it.
+ * Set a given key to correspond to a given value.
+ * @param key if it already exists, then frees the previous value associated,
+ * and sets it to the new one. Otherwise creates a new key-value item.
 */
 void hm_set(struct HashMap *map, char *key, void *value);
 

@@ -35,17 +35,17 @@ struct HashMapItem *hm_item_new(char *key, void *value, struct HashMapItem *next
     return item;
 }
 
-void hm_item_free(struct HashMapItem *hm_item, void value_free(void *value)) {
-    if (value_free != NULL) value_free(hm_item->value);
+void hm_item_free(struct HashMapItem *hm_item, ValueFreeFunction value_free) {
+    if (value_free != NULL && hm_item != NULL) value_free(hm_item->value);
     free(hm_item->key);
     free(hm_item);
 }
 
-struct HashMap* hm_new(size_t sockets) {
-    return hm_new_with_hash(sockets, default_hash);
+inline struct HashMap* hm_new(size_t sockets, ValueFreeFunction value_free) {
+    return hm_new_with_hash(sockets, value_free, default_hash);
 }
 
-struct HashMap* hm_new_with_hash(size_t sockets, HashFunction hash) {
+struct HashMap* hm_new_with_hash(size_t sockets, ValueFreeFunction value_free, HashFunction hash) {
     struct HashMap *map = malloc(sizeof(struct HashMap));
     
     map->sockets = sockets;
@@ -54,11 +54,12 @@ struct HashMap* hm_new_with_hash(size_t sockets, HashFunction hash) {
         map->slots[i] = NULL;
     }
     map->hash = hash;
+    map->value_free = value_free;
     
     return map;
 }
 
-void hm_free(struct HashMap *map, void value_free(void *value)) {
+void hm_free(struct HashMap *map) {
     assert(map != NULL);
 
     for (size_t i = 0; i < map->sockets; i++) {
@@ -66,7 +67,7 @@ void hm_free(struct HashMap *map, void value_free(void *value)) {
 
         while (item != NULL) {
             struct HashMapItem *tmp = item->next;
-            hm_item_free(item, value_free);
+            hm_item_free(item, map->value_free);
             item = tmp;
         }
     }
@@ -77,6 +78,7 @@ void hm_free(struct HashMap *map, void value_free(void *value)) {
 
 void hm_set(struct HashMap *map, char *key, void *value) {
     assert(map != NULL);
+    assert(key != NULL); //? There is no good way to make NULL keys fail silently.
     
     int idx = map->hash(key) % map->sockets;
     struct HashMapItem *item = map->slots[idx];
@@ -92,6 +94,7 @@ void hm_set(struct HashMap *map, char *key, void *value) {
     assert(item != NULL);
 
     if (strcmp(item->key, key) == 0) {
+        map->value_free(item->value);
         item->value = value;
     } else {
         assert(item->next == NULL);
@@ -172,7 +175,7 @@ void hm_print(struct HashMap *map, void print_value(void *value)) {
         struct HashMapItem *item = map->slots[i];
         if (item == NULL) continue;
 
-        printf("Socket #%05lu: ", i);
+        printf("Socket #%05lu:   ", i);
 
         while (item != NULL) {
             printf("\"%s\" : ", item->key);

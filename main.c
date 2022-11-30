@@ -6,7 +6,7 @@
 static void my_print_thingy(char *key, void *value);
 
 int main() {
-    struct HashMap *hm = hm_new(4);
+    struct HashMap *hm = hm_new(4, free);
 
     int *val = malloc(sizeof(int));
     *val = 5;
@@ -48,7 +48,7 @@ int main() {
 
     hm_print(hm, NULL);
 
-    hm_free(hm, free);
+    hm_free(hm);
 }
 
 static void my_print_thingy(char *key, void* value) {
