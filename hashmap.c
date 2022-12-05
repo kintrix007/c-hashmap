@@ -52,6 +52,7 @@ struct HashMap* hm_new_with_hash(size_t socket_count, ValueFreeFunction value_fr
 
     struct HashMap *map = malloc(sizeof(struct HashMap));
     
+    map->size = 0;
     map->socket_count = socket_count;
     map->sockets = malloc(socket_count * sizeof(struct HashMapItem*));
     for (size_t i = 0; i < socket_count; i++) {
@@ -89,6 +90,7 @@ void hm_set(struct HashMap *map, char *key, void *value) {
 
     if (item == NULL) {
         map->sockets[idx] = hm_item_new(key, value, NULL);
+        map->size++;
         return;
     }
 
@@ -103,6 +105,7 @@ void hm_set(struct HashMap *map, char *key, void *value) {
     } else {
         assert(item->next == NULL);
         item->next = hm_item_new(key, value, NULL);
+        map->size++;
     }
 }
 
@@ -147,10 +150,47 @@ void *hm_remove(struct HashMap *map, char *key) {
     } else {
         prev->next = item->next;
     }
+    map->size--;
 
     void *value = item->value;
     hm_item_free(item, NULL);
     return value;
+}
+
+char **hm_get_keys(struct HashMap *map) {
+    assert(map != NULL);
+
+    size_t idx = 0;
+    char **keys = malloc(map->size * sizeof(char *));
+
+    for (size_t i = 0; i < map->socket_count; i++) {
+        struct HashMapItem *item = map->sockets[i];
+
+        while (item != NULL) {
+            keys[idx++] = item->key;
+            item = item->next;
+        }
+    }
+
+    return keys;
+}
+
+void **hm_get_values(struct HashMap *map) {
+    assert(map != NULL);
+
+    size_t idx = 0;
+    void **values = malloc(map->size * sizeof(void *));
+
+    for (size_t i = 0; i < map->socket_count; i++) {
+        struct HashMapItem *item = map->sockets[i];
+
+        while (item != NULL) {
+            values[idx++] = item->value;
+            item = item->next;
+        }
+    }
+
+    return values;
 }
 
 void hm_foreach(struct HashMap *map, void callback(char *key, void *value)) {

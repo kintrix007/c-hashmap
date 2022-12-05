@@ -41,23 +41,28 @@ void test_hm_free()
 
 void test_hm_set_get() {
     struct HashMap *hm = hm_new(2, free);
+    assert_that(hm->size == 0);
     int *val;
 
     val = malloc(sizeof(int));
     *val = 999;
     hm_set(hm, "one", val);
+    assert_that(hm->size == 1);
 
     val = malloc(sizeof(int));
     *val = 1;
     hm_set(hm, "one", val);     // Overrides (and frees) the previous "one" : 999
+    assert_that(hm->size == 1);
 
     val = malloc(sizeof(int));
     *val = 2;
     hm_set(hm, "two", val);
+    assert_that(hm->size == 2);
 
     val = malloc(sizeof(int));
     *val = 3;
     hm_set(hm, "three", val);
+    assert_that(hm->size == 3);
 
     val = hm_get(hm, "two");
     assert_that(val != NULL);
@@ -76,32 +81,39 @@ void test_hm_set_get() {
 
 void test_hm_remove() {
     struct HashMap *hm = hm_new(5, free);
+    assert_that(hm->size == 0);
     double *val;
 
     val = malloc(sizeof(double));
     *val = 3.14159;
     hm_set(hm, "PI", val);
+    assert_that(hm->size == 1);
     val = malloc(sizeof(double));
     *val = 6.28318;
     hm_set(hm, "TAU", val);
+    assert_that(hm->size == 2);
     val = malloc(sizeof(double));
     *val = 2.718;
     hm_set(hm, "e", val);
+    assert_that(hm->size == 3);
 
     val = hm_get(hm, "TAU");
     assert_that(val != NULL);
     assert_dbl_equals(*(double*)val, 6.28318);
+    assert_that(hm->size == 3);
 
     val = hm_remove(hm, "TAU");
     assert_that(val != NULL);
     assert_dbl_equals(*(double*)val, 6.28318);
     free(val); //! Do NOT forget this
+    assert_that(hm->size == 2);
 
     val = hm_get(hm, "TAU");
     assert_that(val == NULL);
 
     val = hm_remove(hm, "TAU");
     assert_that(val == NULL);
+    assert_that(hm->size == 2);
 
     val = hm_get(hm, "PI");
     assert_that(val != NULL);
@@ -110,6 +122,22 @@ void test_hm_remove() {
     val = hm_get(hm, "e");
     assert_that(val != NULL);
     assert_dbl_equals(*(double *)val, 2.718);
+
+    val = hm_remove(hm, "PI");
+    assert_that(val != NULL);
+    assert_dbl_equals(*(double *)val, 3.14159);
+    free(val); //! Do NOT forget this
+    assert_that(hm->size == 1);
+
+    val = hm_remove(hm, "e");
+    assert_that(val != NULL);
+    assert_dbl_equals(*(double *)val, 2.718);
+    free(val); //! Do NOT forget this
+    assert_that(hm->size == 0);
+
+    val = hm_remove(hm, "smthn");
+    assert_that(val == NULL);
+    assert_that(hm->size == 0);
 
     hm_free(hm);
 }

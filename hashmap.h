@@ -14,6 +14,7 @@ struct HashMapItem
 };
 
 struct HashMap {
+    size_t size;
     size_t socket_count;
     struct HashMapItem **sockets;
     HashFunction *hash;
@@ -76,6 +77,20 @@ void *hm_get(struct HashMap *map, char *key);
  * This HAS to be freed manually.
 */
 void *hm_remove(struct HashMap *map, char *key);
+
+/**
+ * Get the keys of the hashmap as an array. It is guaranteed to be the same
+ * order as `hm_get_keys`
+ * @returns an array of the keys. This needs to be freed manually.
+*/
+char **hm_get_keys(struct HashMap *map);
+
+/**
+ * Get the values of the hashmap as an array. It is guaranteed to be the same
+ * order as `hm_get_values`
+ * @returns an array of the values. This needs to be freed manually.
+ */
+void **hm_get_values(struct HashMap *map);
 
 /**
  * Iterate over all the key-value pairs of the HashMap.

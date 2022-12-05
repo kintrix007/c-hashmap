@@ -26,6 +26,21 @@ int main() {
     hm_print(hm, NULL);
 
     printf("\n");
+    char **keys = hm_get_keys(hm);
+    for (size_t i = 0; i < hm->size; i++) {
+        printf("'%s' ", keys[i]);
+    }
+    printf("\n");
+    free(keys);
+    printf("\n");
+
+    void **values = hm_get_values(hm);
+    for (size_t i = 0; i < hm->size; i++) {
+        printf("%d ", *(int *)values[i]);
+    }
+    printf("\n");
+    free(values);
+    printf("\n");
 
     void *value = hm_get(hm, "Joe");
     if (value != NULL) printf("-> Joe: %d\n", *(int*)value);
