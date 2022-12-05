@@ -220,6 +220,32 @@ void hm_set_new_hash(struct HashMap *map, HashFunction hash) {
     assert(map != NULL);
     assert(hash != NULL);
 
+    size_t size = map->size;
+    size_t idx = 0;
+    struct HashMapItem **items = malloc(size * sizeof(struct HashMapItem*));
+
+    for (size_t i = 0; i < map->socket_count; i++){
+        struct HashMapItem *item = map->sockets[i];
+
+        while (item != NULL) {
+            items[idx++] = item;
+            item = item->next;
+        }
+    }
+
+    map->sockets = realloc(map->sockets, map->socket_count * sizeof(struct HashMapItem*));
+    map->hash = hash;
+
+    for (size_t i = 0; i < map->socket_count; i++) {
+        map->sockets[i] = NULL;
+    }
+
+    map->size = 0;
+    for (idx = 0; idx < size; idx++) {
+        hm_set(map, items[idx]->key, items[idx]->value);
+    }
+
+    free(items);
 }
 
 void hm_print(struct HashMap *map, void print_value(void *value)) {

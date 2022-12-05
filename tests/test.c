@@ -10,10 +10,8 @@ static unsigned int custom_hash(char *str) {
     return hash;
 }
 
-void test_hm_free()
-{
-    struct HashMap *hm = hm_new(150, free);
-    // struct HashMap *hm = hm_new_with_hash(150, free, custom_hash);
+void test_hm_free() {
+    struct HashMap *hm = hm_new_with_hash(150, free, custom_hash);
     char *key;
 
     for (char i = '!'; i < '~'; i++) {
@@ -159,7 +157,9 @@ void test_hm_rehash() {
     *val = 1000;
     hm_set(hm, "thousand", val);
 
+    // hm_print(hm, NULL);
     hm_set_new_hash(hm, custom_hash);
+    // hm_print(hm, NULL);
 
     val = hm_remove(hm, "one");
     assert_that(val == NULL);
